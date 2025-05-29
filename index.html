@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quantum Portraits</title>
+  <!-- Используем CDN для загрузки p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
     body {
@@ -34,7 +35,6 @@
       align-items: center;
       width: 100%;
       flex-grow: 1;
-      min-height: calc(100vh - 40px);
     }
     .step.active {
       display: flex;
@@ -128,11 +128,10 @@
       display: none;
       border: 2px solid #fff;
       width: 100%;
-      max-width: 800px;
       height: auto;
-      max-height: calc(50vh - 100px);
+      max-height: calc(100vh - 250px);
       object-fit: contain;
-      margin: 20px auto;
+      margin: 20px 0;
       z-index: 1;
       cursor: pointer;
     }
@@ -205,6 +204,7 @@
       display: none;
     }
 
+    /* Адаптивные стили */
     @media (max-width: 768px) {
       .text-container {
         font-size: 1rem;
@@ -220,7 +220,7 @@
         margin: 5px 0;
       }
       canvas {
-        max-height: calc(40vh - 100px);
+        max-height: calc(100vh - 300px);
       }
       .back-button, .continue-button {
         top: 10px;
@@ -237,15 +237,7 @@
         height: 80px;
       }
       canvas {
-        max-height: calc(35vh - 80px);
-      }
-    }
-    @media (max-height: 600px) {
-      .text-container {
-        padding-top: 50px;
-      }
-      canvas {
-        max-height: calc(40vh - 50px);
+        max-height: calc(100vh - 350px);
       }
     }
   </style>
@@ -255,9 +247,12 @@
   <div class="flash" id="flashEffect"></div>
   <div id="loader">Загрузка...</div>
   <div class="container">
-    <button class="back-button" id="backButton" style="display: none;" aria-label="Вернуться на предыдущий шаг" onclick="goBack()">Назад / Back</button>
-    <button class="continue-button" id="continueButton" style="display: none;" disabled aria-label="Перейти к следующему шагу" onclick="nextStep()">Продолжить / Continue</button>
+    <!-- Кнопка "Назад" -->
+    <button class="back-button" id="backButton" style="display: none;" aria-label="Вернуться на предыдущий шаг" onclick="debouncedGoBack()">Назад / Back</button>
+    <!-- Кнопка "Продолжить" -->
+    <button class="continue-button" id="continueButton" style="display: none;" disabled aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
 
+    <!-- Шаг 0: Выбор языка -->
     <div class="step" id="step0">
       <div class="text-container">
         <div class="typewriter" id="typewriter0"></div>
@@ -268,6 +263,7 @@
       </div>
     </div>
 
+    <!-- Шаг 1: Приветствие -->
     <div class="step" id="step1">
       <div class="text-container">
         <div class="typewriter" id="typewriter1"></div>
@@ -275,6 +271,7 @@
       <div class="button-container"></div>
     </div>
 
+    <!-- Шаг 2: Загрузка портрета -->
     <div class="step" id="step2">
       <div class="text-container">
         <div class="typewriter" id="typewriter2"></div>
@@ -286,41 +283,38 @@
       </div>
     </div>
 
+    <!-- Шаг 3: Инициализация -->
     <div class="step" id="step3">
       <div class="text-container">
         <div class="typewriter" id="typewriter3"></div>
       </div>
       <div class="button-container"></div>
-      <div style="width: 100%; display: flex; justify-content: center;">
-        <canvas id="canvasStep3"></canvas>
-      </div>
     </div>
 
+    <!-- Шаг 4: Наблюдение -->
     <div class="step" id="step4">
       <div class="text-container">
         <div class="typewriter" id="typewriter4"></div>
       </div>
+      <div class="canvas-container" id="canvasContainer4"></div>
       <div class="button-container">
-        <button class="button" aria-label="Перейти к следующему шагу" onclick="nextStep()">Продолжить / Continue</button>
-      </div>
-      <div style="width: 100%; display: flex; justify-content: center;">
-        <canvas id="canvasStep4"></canvas>
+        <button class="button" aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
       </div>
     </div>
 
+    <!-- Шаг 5: Фиксация -->
     <div class="step" id="step5">
       <div class="text-container">
         <div class="typewriter" id="typewriter5"></div>
       </div>
+      <button class="save-button" id="saveButton" style="display: none;" aria-label="Сохранить изображение" onclick="saveCurrentState()">Сохранить изображение / Save Image</button>
+      <div class="canvas-container" id="canvasContainer5"></div>
       <div class="button-container">
-        <button class="save-button" id="saveButton" style="display: none;" aria-label="Сохранить изображение" onclick="saveCurrentState()">Сохранить изображение / Save Image</button>
-        <button class="button" aria-label="Перейти к следующему шагу" onclick="nextStep()">Продолжить / Continue</button>
-      </div>
-      <div style="width: 100%; display: flex; justify-content: center;">
-        <canvas id="canvasStep5"></canvas>
+        <button class="button" aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
       </div>
     </div>
 
+    <!-- Шаг 6: Интерпретация -->
     <div class="step" id="step6">
       <div class="text-container">
         <div class="typewriter" id="typewriter6"></div>
@@ -330,6 +324,7 @@
       </div>
     </div>
 
+    <!-- Шаг 7: Завершение -->
     <div class="step" id="step7">
       <div class="text-container">
         <div class="typewriter" id="typewriter7"></div>
@@ -358,6 +353,8 @@
     let isPaused = false;
     let particles = [];
     let quantumStates = [];
+    let canvas;
+    let isCanvasReady = false;
 
     const portraitUrls = [
       'https://via.placeholder.com/256?text=Portrait+1',
@@ -379,15 +376,60 @@
       step2_after: { ru: '> Изображение принято.\n> Запускается волновая функция.\n> Система готова к инициализации.', en: '> Image accepted.\n> Wave function launching.\n> System ready for initialization.' },
       step3: { ru: 'Шаг 2: Инициализация\n> Изображение преобразовано в пиксельную\nсетку.\n> Каждому пикселю назначены параметры (x, y,\nbrightness, color).\n> На их основе построена волновая функция: ψ(x,\ny, t).\nУравнение эволюции:\niℏ ∂ψ/∂t = Ĥψ, где Ĥ = -½∇² + V(x, y)\n> Потенциал V(x, y) формируется из визуальных\nхарактеристик изображения.\n> Система переходит в режим временной\nсимуляции.\n> Портрет существует как совокупность\nвозможных состояний.', en: 'Step 2: Initialization\n> Image converted into a pixel grid.\n> Each pixel assigned parameters (x, y,\nbrightness, color).\n> Based on them, a wave function is built: ψ(x,\ny, t).\nEvolution equation:\niℏ ∂ψ/∂t = Ĥψ, where Ĥ = -½∇² + V(x, y)\n> Potential V(x, y) is formed from the visual\ncharacteristics of the image.\n> System enters temporal simulation mode.\n> The portrait exists as a set of possible\nstates.' },
       step4: { ru: 'Шаг 3: НАЧНИТЕ НАБЛЮДЕНИЕ\n> Двигайте курсором по изображению.\n> Каждый ваш жест запускает коллапс.\n> Система реагирует. Наблюдаемый образ\nформируется здесь и сейчас.', en: 'Step 3: BEGIN OBSERVATION\n> Move the cursor over the image.\n> Each gesture triggers a collapse.\n> The system reacts. The observed image is\nformed here and now.' },
-      step5: { ru: 'Шаг 4: ФИКСАЦИЯ\n> Портрет — это процесс.\n> Но ты можешь зафиксировать один миг.\n> Это будет один из возможных тебя', en: 'Step 4: FIXATION\n> A portrait is a process.\n> But you can fix a single moment.\n> This will be one of your possible selves.' },
+      step5: { ru: 'Шаг 4: ФИКСАЦИЯ\n> Портрет — это процесс.\n> Но ты можешь зафиксировать один миг.\n> Это будет один из возможных тебя.', en: 'Step 4: FIXATION\n> A portrait is a process.\n> But you can fix a single moment.\n> This will be one of your possible selves.' },
       step6: { ru: 'Шаг 5: РЕАКЦИЯ СИСТЕМЫ\n> Это не портрет.\n> Это — реакция системы на тебя.\n> Ты повлиял на исход.', en: 'Step 5: SYSTEM REACTION\n> This is not a portrait.\n> This is the system\'s reaction to you.\n> You influenced the outcome.' },
       step7: { ru: 'Ты — не единственный наблюдатель.\nКаждое наблюдение — это акт, формирующий\nобраз. Здесь ты — одновременно субъект и\nобъект.', en: 'You are not the only observer.\nEach observation is an act that shapes the\nimage. Here, you are both subject and object.' }
     };
 
+    // Debouncing для предотвращения множественных кликов
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    const debouncedNextStep = debounce(nextStep, 300);
+    const debouncedGoBack = debounce(goBack, 300);
+
     function selectLanguage(lang) {
       language = lang;
       updateContinueButtonText();
-      nextStep();
+      debouncedNextStep();
+    }
+
+    function showCanvas(containerId) {
+      if (!canvas) {
+        console.error(`Канва не создана для ${containerId}!`);
+        return;
+      }
+      // Удаляем канву из текущего контейнера
+      const canvasElement = canvas.elt;
+      const currentParent = canvasElement.parentElement;
+      if (currentParent) {
+        currentParent.removeChild(canvasElement);
+      }
+      // Перемещаем канву в новый контейнер
+      const container = document.getElementById(containerId);
+      if (container) {
+        container.appendChild(canvasElement);
+        canvasElement.style.display = 'block';
+        console.log(`Канва перемещена в ${containerId} и отображается`);
+      } else {
+        console.error(`Контейнер ${containerId} не найден!`);
+      }
+    }
+
+    function hideCanvas() {
+      if (canvas) {
+        canvas.elt.style.display = 'none';
+        console.log('Канва скрыта');
+      }
     }
 
     function nextStep() {
@@ -411,36 +453,58 @@
 
       nextStepElement.classList.add('active');
       document.getElementById('backButton').style.display = currentStep > 0 ? 'block' : 'none';
-      document.getElementById('continueButton').style.display = (currentStep > 0 && currentStep < 7 && currentStep !== 3) ? 'block' : 'none';
+      document.getElementById('continueButton').style.display = currentStep > 0 && currentStep < 7 ? 'block' : 'none';
       updateContinueButtonState();
 
       if (currentStep === 1) {
         triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(debouncedNextStep, 10000));
       } else if (currentStep === 2) {
-        initStep2Buttons();
+        hideCanvas();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 3) {
         if (!img) {
-          goBack();
+          debouncedGoBack();
           return;
         }
-        document.getElementById('canvasStep3').style.display = 'block';
         triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(nextStep, 10000));
+        hideCanvas();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 4) {
-        document.getElementById('canvasStep4').style.display = 'block';
-        if (!isPaused) loop();
+        if (isCanvasReady) {
+          showCanvas('canvasContainer4');
+          loop();
+        } else {
+          console.error('Шаг 4: Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer4');
+              loop();
+            }
+          }, 500);
+        }
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 5) {
-        document.getElementById('canvasStep5').style.display = 'block';
-        if (!isPaused) loop();
+        if (isCanvasReady) {
+          showCanvas('canvasContainer5');
+          if (!isPaused) loop();
+        } else {
+          console.error('Шаг 5: Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer5');
+              if (!isPaused) loop();
+            }
+          }, 500);
+        }
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 6) {
-        document.getElementById('canvasStep5').style.display = 'none';
+        hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(nextStep, 15000));
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        setTimeout(debouncedNextStep, 15000);
       } else if (currentStep === 7) {
+        hideCanvas();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       }
     }
@@ -461,13 +525,14 @@
 
       previousStepElement.classList.add('active');
       document.getElementById('backButton').style.display = currentStep > 0 ? 'block' : 'none';
-      document.getElementById('continueButton').style.display = (currentStep > 0 && currentStep < 7 && currentStep !== 3) ? 'block' : 'none';
+      document.getElementById('continueButton').style.display = currentStep > 0 && currentStep < 7 ? 'block' : 'none';
       updateContinueButtonState();
 
-      if (currentStep === 2) {
-        document.getElementById('canvasStep3').style.display = 'none';
-        document.getElementById('canvasStep4').style.display = 'none';
-        document.getElementById('canvasStep5').style.display = 'none';
+      if (currentStep === 0 || currentStep === 1) {
+        hideCanvas();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, currentStep === 1 ? () => setTimeout(debouncedNextStep, 10000) : null);
+      } else if (currentStep === 2) {
+        hideCanvas();
         document.getElementById('portraitGallery').style.display = 'none';
         noLoop();
         particles = [];
@@ -475,45 +540,52 @@
         frame = 0;
         isPaused = false;
         img = null;
-        initStep2Buttons();
+        const step2Buttons = document.getElementById('step2Buttons');
+        step2Buttons.innerHTML = `
+          <input type="file" id="imageInput" accept="image/*" style="display: none;">
+          <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">${language === 'ru' ? 'Загрузить фото' : 'Upload Photo'}</button>
+          <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">${language === 'ru' ? 'Выбрать готовое' : 'Select from Archive'}</button>
+        `;
         typeText('typewriter2', translations.step2[language], 50);
       } else if (currentStep === 3) {
-        document.getElementById('canvasStep3').style.display = 'block';
-        document.getElementById('canvasStep4').style.display = 'none';
-        document.getElementById('canvasStep5').style.display = 'none';
+        hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(nextStep, 10000));
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 4) {
-        document.getElementById('canvasStep3').style.display = 'none';
-        document.getElementById('canvasStep4').style.display = 'block';
-        document.getElementById('canvasStep5').style.display = 'none';
-        if (!isPaused) loop();
+        if (isCanvasReady) {
+          showCanvas('canvasContainer4');
+          if (!isPaused) loop();
+        } else {
+          console.error('Шаг 4 (назад): Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer4');
+              if (!isPaused) loop();
+            }
+          }, 500);
+        }
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 5) {
-        document.getElementById('canvasStep3').style.display = 'none';
-        document.getElementById('canvasStep4').style.display = 'none';
-        document.getElementById('canvasStep5').style.display = 'block';
-        if (!isPaused) loop();
+        if (isCanvasReady) {
+          showCanvas('canvasContainer5');
+          if (!isPaused) loop();
+        } else {
+          console.error('Шаг 5 (назад): Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer5');
+              if (!isPaused) loop();
+            }
+          }, 500);
+        }
         document.getElementById('saveButton').style.display = isPaused ? 'block' : 'none';
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 6) {
-        document.getElementById('canvasStep5').style.display = 'none';
+        hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(nextStep, 15000));
-      } else if (currentStep === 1) {
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
-      } else if (currentStep === 0) {
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        setTimeout(debouncedNextStep, 15000);
       }
-    }
-
-    function initStep2Buttons() {
-      const step2Buttons = document.getElementById('step2Buttons');
-      step2Buttons.innerHTML = `
-        <input type="file" id="imageInput" accept="image/*" style="display: none;">
-        <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">${language === 'ru' ? 'Загрузить фото' : 'Upload Photo'}</button>
-        <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">${language === 'ru' ? 'Выбрать готовое' : 'Select from Archive'}</button>
-      `;
     }
 
     function typeText(elementId, text, speed, callback) {
@@ -526,12 +598,7 @@
       element.innerHTML = '';
       function type() {
         if (i < text.length) {
-          const char = text.charAt(i);
-          if (/[\u0400-\u04FF]/.test(char) || /[\x20-\x7E]/.test(char)) {
-            element.innerHTML += char;
-          } else {
-            element.innerHTML += char;
-          }
+          element.innerHTML += text.charAt(i);
           i++;
           setTimeout(type, speed);
         } else if (callback) {
@@ -556,9 +623,7 @@
       particles = [];
       quantumStates = [];
 
-      document.getElementById('canvasStep3').style.display = 'none';
-      document.getElementById('canvasStep4').style.display = 'none';
-      document.getElementById('canvasStep5').style.display = 'none';
+      hideCanvas();
       document.getElementById('portraitGallery').style.display = 'none';
       noLoop();
 
@@ -609,12 +674,9 @@
     }
 
     function loadImageFromUrl(url) {
-      console.log('Попытка загрузки изображения с URL:', url);
       document.getElementById('loader').style.display = 'block';
-      
       loadImage(url, (loadedImg) => {
         img = loadedImg;
-        console.log('Изображение успешно загружено:', img);
         document.getElementById('portraitGallery').style.display = 'none';
         const typewriter2 = document.getElementById('typewriter2');
         typewriter2.innerHTML = '';
@@ -622,15 +684,13 @@
         step2Buttons.innerHTML = '';
         typeText('typewriter2', translations.step2_after[language], 50, () => {
           setTimeout(() => {
-            console.log('Переход на следующий шаг, img:', img);
-            if (img) nextStep();
+            if (img) debouncedNextStep();
           }, 10000);
         });
         document.getElementById('loader').style.display = 'none';
         updateContinueButtonState();
       }, () => {
         document.getElementById('loader').style.display = 'none';
-        console.error('Ошибка загрузки изображения с URL:', url);
         alert(language === 'ru' ? 'Ошибка загрузки изображения. Попробуйте другое.' : 'Image loading error. Please try another.');
         updateContinueButtonState();
       });
@@ -667,12 +727,11 @@
     function saveCurrentState() {
       console.log('Сохранение изображения...');
       try {
-        const canvas = document.getElementById('canvasStep5');
         if (!canvas) {
           alert(language === 'ru' ? 'Canvas не найден. Убедитесь, что изображение отображается.' : 'Canvas not found. Ensure the image is displayed.');
           return;
         }
-        const dataURL = canvas.toDataURL('image/png');
+        const dataURL = canvas.elt.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = dataURL;
         link.download = 'quantum-portrait.png';
@@ -702,35 +761,34 @@
     let wavePhase = 0;
 
     function setup() {
-      const canvas3 = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
-      canvas3.parent('canvasStep3');
-      const canvas4 = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
-      canvas4.parent('canvasStep4');
-      const canvas5 = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
-      canvas5.parent('canvasStep5');
-
+      canvas = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
+      canvas.parent('canvasContainer4'); // Изначально привязываем к шагу 4
       pixelDensity(1);
       frameRate(30);
       noLoop();
+      canvas.elt.style.display = 'none'; // Скрываем по умолчанию
 
-      canvas5.elt.addEventListener('click', function() {
+      canvas.elt.addEventListener('click', function() {
         if (currentStep === 5) {
           if (!isPaused) {
             isPaused = true;
             noLoop();
             document.getElementById('saveButton').style.display = 'block';
+            console.log('Шаг 5: Пауза, saveButton отображается');
           } else {
             isPaused = false;
             loop();
+            document.getElementById('saveButton').style.display = 'none';
+            console.log('Шаг 5: Возобновление');
           }
         }
       });
 
-      canvas5.elt.addEventListener('touchmove', function(e) {
+      canvas.elt.addEventListener('touchmove', function(e) {
         e.preventDefault();
         const touch = e.touches[0];
-        mouseX = touch.clientX - canvas5.elt.offsetLeft;
-        mouseY = touch.clientY - canvas5.elt.offsetTop;
+        mouseX = touch.clientX - canvas.elt.offsetLeft;
+        mouseY = touch.clientY - canvas.elt.offsetTop;
       });
 
       window.addEventListener('resize', () => {
@@ -739,111 +797,94 @@
 
       lastMouseX = mouseX;
       lastMouseY = mouseY;
+      isCanvasReady = true;
+      console.log('setup: Канва создана и готова');
     }
 
     function draw() {
-      if (currentStep === 3) {
-        background(0);
-        fill(255);
-        textAlign(CENTER, CENTER);
-        textSize(16);
-        text(language === 'ru' ? 'Инициализация...' : 'Initializing...', width / 2, height / 2);
-        return;
-      }
-
-      if (!img || !img.width) {
-        console.log('Изображение не загружено или недоступно:', img);
-        background(0);
-        fill(255);
-        textAlign(CENTER, CENTER);
-        textSize(16);
-        text(language === 'ru' ? 'Изображение не загружено.' : 'Image not loaded.', width / 2, height / 2);
-        return;
-      }
-
-      if (quantumStates.length === 0 && currentStep >= 4) {
-        console.log('Инициализация quantumStates...');
-        let centerX = width / 2;
-        let centerY = height / 2;
-        let scaleFactor = min(width, height) / 512;
-        let gridSize = 4 / scaleFactor;
-        for (let y = 0; y < 256; y += gridSize) {
-          for (let x = 0; x < 256; x += gridSize) {
-            let pixelX = constrain(x, 0, 255);
-            let pixelY = constrain(y, 0, 255);
-            let col = img.get(pixelX, pixelY);
-            let brightnessVal = brightness(col);
-            if (brightnessVal > 20) {
-              let size = random(4, 8) * scaleFactor;
-              let shapeType = floor(random(4));
-              let distFromCenter = dist(x, y, 128, 128);
-              let densityFactor = map(distFromCenter, 0, 128, 1, 0.3);
-              if (random() < densityFactor && particles.length < 2000) {
-                particles.push({
-                  x: centerX - 128 * scaleFactor + x * scaleFactor,
-                  y: centerY - 128 * scaleFactor + y * scaleFactor,
-                  baseX: centerX - 128 * scaleFactor + x * scaleFactor,
-                  baseY: centerY - 128 * scaleFactor + y * scaleFactor,
-                  offsetX: 0,
-                  offsetY: 0,
-                  size: size,
-                  phase: random(TWO_PI),
-                  entangledWith: null,
-                  gridX: x,
-                  gridY: y,
-                  shapeType: shapeType,
-                  wavePhase: 0,
-                  waveInfluence: 0,
-                  baseColor: [red(col), green(col), blue(col)],
-                  baseShape: shapeType,
-                  tunneled: false,
-                  tunnelTargetX: 0,
-                  tunnelTargetY: 0,
-                  tunnelReturnSpeed: 0.02
-                });
+      if (!img || !img.width || quantumStates.length === 0) {
+        if (img && img.width) {
+          let centerX = width / 2;
+          let centerY = height / 2;
+          let scaleFactor = min(width, height) / 512;
+          let gridSize = Math.max(4 / scaleFactor, 1);
+          for (let y = 0; y < 256; y += gridSize) {
+            for (let x = 0; x < 256; x += gridSize) {
+              let pixelX = constrain(x, 0, 255);
+              let pixelY = constrain(y, 0, 255);
+              let col = img.get(pixelX, pixelY);
+              let brightnessVal = brightness(col);
+              if (brightnessVal > 20) {
+                let size = random(4, 8) * scaleFactor;
+                let shapeType = floor(random(4));
+                let distFromCenter = dist(x, y, 128, 128);
+                let densityFactor = map(distFromCenter, 0, 128, 1, 0.3);
+                if (random() < densityFactor && particles.length < 2000) {
+                  particles.push({
+                    x: centerX - 128 * scaleFactor + x * scaleFactor,
+                    y: centerY - 128 * scaleFactor + y * scaleFactor,
+                    baseX: centerX - 128 * scaleFactor + x * scaleFactor,
+                    baseY: centerY - 128 * scaleFactor + y * scaleFactor,
+                    offsetX: 0,
+                    offsetY: 0,
+                    size: size,
+                    phase: random(TWO_PI),
+                    entangledWith: null,
+                    gridX: x,
+                    gridY: y,
+                    shapeType: shapeType,
+                    wavePhase: 0,
+                    waveInfluence: 0,
+                    baseColor: [red(col), green(col), blue(col)],
+                    tunneled: false,
+                    tunnelTargetX: 0,
+                    tunnelTargetY: 0,
+                    tunnelReturnSpeed: 0.02
+                  });
+                }
               }
             }
           }
-        }
 
-        img.loadPixels();
-        for (let i = 0; i < particles.length; i++) {
-          let particle = particles[i];
-          let pixelX = constrain(Math.floor((particle.baseX - (centerX - 128 * scaleFactor)) / scaleFactor), 0, img.width - 1);
-          let pixelY = constrain(Math.floor((particle.baseY - (centerY - 128 * scaleFactor)) / scaleFactor), 0, img.height - 1);
-          let col = img.get(pixelX, pixelY);
-          let entangledIndex = null;
-          if (random() < 0.3) {
-            let potentialPartners = particles.filter((p, idx) => idx !== i && !p.entangledWith);
-            if (potentialPartners.length > 0) {
-              let partner = random(potentialPartners);
-              entangledIndex = particles.indexOf(partner);
-              partner.entangledWith = i;
+          img.loadPixels();
+          for (let i = 0; i < particles.length; i++) {
+            let particle = particles[i];
+            let pixelX = constrain(Math.floor((particle.baseX - (centerX - 128 * scaleFactor)) / scaleFactor), 0, img.width - 1);
+            let pixelY = constrain(Math.floor((particle.baseY - (centerY - 128 * scaleFactor)) / scaleFactor), 0, img.height - 1);
+            let col = img.get(pixelX, pixelY);
+            let entangledIndex = null;
+            if (random() < 0.3) {
+              let potentialPartners = particles.filter((p, idx) => idx !== i && !p.entangledWith);
+              if (potentialPartners.length > 0) {
+                let partner = random(potentialPartners);
+                entangledIndex = particles.indexOf(partner);
+                partner.entangledWith = i;
+              }
             }
+            quantumStates[i] = {
+              r: red(col),
+              g: green(col),
+              b: blue(col),
+              a: alpha(col),
+              baseR: red(col),
+              baseG: green(col),
+              baseB: blue(col),
+              superpositionStates: [
+                { r: red(col) + random(-30, 30), g: green(col) + random(-30, 30), b: blue(col) + random(-30, 30) },
+                { r: red(col) + random(-30, 30), g: green(col) + random(-30, 30), b: blue(col) + random(-30, 30) }
+              ],
+              collapsed: false,
+              entangledWith: entangledIndex,
+              phase: random(TWO_PI),
+              amplitude: random(30, 60) * scaleFactor,
+              isLips: (pixelY > img.height * 0.47 && pixelY < img.height * 0.55 && pixelX > img.width * 0.35 && pixelX < img.width * 0.65),
+              isEyes: ((pixelY > img.height * 0.31 && pixelY < img.height * 0.39) && ((pixelX > img.width * 0.31 && pixelX < img.width * 0.43) || (pixelX > img.width * 0.57 && pixelX < img.width * 0.69))),
+              isHair: (pixelY < img.height * 0.31),
+              brightColor: null
+            };
           }
-          quantumStates[i] = {
-            r: red(col),
-            g: green(col),
-            b: blue(col),
-            a: alpha(col),
-            baseR: red(col),
-            baseG: green(col),
-            baseB: blue(col),
-            superpositionStates: [
-              { r: red(col) + random(-30, 30), g: green(col) + random(-30, 30), b: blue(col) + random(-30, 30) },
-              { r: red(col) + random(-30, 30), g: green(col) + random(-30, 30), b: blue(col) + random(-30, 30) }
-            ],
-            collapsed: false,
-            entangledWith: entangledIndex,
-            phase: random(TWO_PI),
-            amplitude: random(30, 60) * scaleFactor,
-            isLips: (pixelY > img.height * 0.47 && pixelY < img.height * 0.55 && pixelX > img.width * 0.35 && pixelX < img.width * 0.65),
-            isEyes: ((pixelY > img.height * 0.31 && pixelY < img.height * 0.39) && ((pixelX > img.width * 0.31 && pixelX < img.width * 0.43) || (pixelX > img.width * 0.57 && pixelX < img.width * 0.69))),
-            isHair: (pixelY < img.height * 0.31),
-            brightColor: null
-          };
         }
-        console.log('quantumStates инициализирован:', quantumStates);
+        return;
       }
 
       frame += 1;
@@ -929,8 +970,10 @@
         particle.offsetY = baseOffsetY + waveOffsetY;
 
         let dx = particle.baseX - (particle.x + particle.offsetX);
-        let dy = particle.baseY - (particle.y + particle.offsetY);
+        particle.x += dx * 0.03;
         particle.offsetX += dx * 0.03;
+        let dy = particle.baseY - (particle.y + particle.offsetY);
+        particle.y += dy * 0.03;
         particle.offsetY += dy * 0.03;
 
         state.phase += 0.02 * speedFactor;
@@ -981,7 +1024,11 @@
         translate(particle.x + particle.offsetX, particle.y + particle.offsetY);
         noStroke();
         let alpha = state.a * (0.5 + 0.5 * sin(frame * 0.05 + state.phase));
-        fill(state.r, state.g, state.b, alpha * 0.8);
+        if (state.brightColor) {
+          fill(state.brightColor[0], state.brightColor[1], state.brightColor[2], alpha * 0.8);
+        } else {
+          fill(state.r, state.g, state.b, alpha * 0.8);
+        }
 
         let uncertainty = map(d, 0, mouseInfluenceRadius, 0, 1);
         if (random() < uncertainty * 0.02 && !isPaused) particle.shapeType = floor(random(4));
