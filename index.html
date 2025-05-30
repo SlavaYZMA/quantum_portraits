@@ -257,7 +257,7 @@
       <div class="text-container">
         <div class="typewriter" id="typewriter0"></div>
       </div>
-      <div class="button-container">
+      <div class="button-container" id="step0Buttons">
         <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
         <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
       </div>
@@ -297,9 +297,7 @@
         <div class="typewriter" id="typewriter4"></div>
       </div>
       <div class="canvas-container" id="canvasContainer4"></div>
-      <div class="button-container">
-        <button class="button" aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
-      </div>
+      <div class="button-container"></div>
     </div>
 
     <!-- Шаг 5: Фиксация -->
@@ -309,9 +307,7 @@
       </div>
       <button class="save-button" id="saveButton" style="display: none;" aria-label="Сохранить изображение" onclick="saveCurrentState()">Сохранить изображение / Save Image</button>
       <div class="canvas-container" id="canvasContainer5"></div>
-      <div class="button-container">
-        <button class="button" aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
-      </div>
+      <div class="button-container"></div>
     </div>
 
     <!-- Шаг 6: Интерпретация -->
@@ -358,8 +354,8 @@
 
     const portraitUrls = [
       'images/portrait1.png',
-        'images/portrait2.png',
-        'images/portrait3.png'
+      'images/portrait2.png',
+      'images/portrait3.png'
     ];
 
     const translations = {
@@ -401,13 +397,11 @@
         console.error(`Канва не создана для ${containerId}!`);
         return;
       }
-      // Удаляем канву из текущего контейнера
       const canvasElement = canvas.elt;
       const currentParent = canvasElement.parentElement;
       if (currentParent) {
         currentParent.removeChild(canvasElement);
       }
-      // Перемещаем канву в новый контейнер
       const container = document.getElementById(containerId);
       if (container) {
         container.appendChild(canvasElement);
@@ -451,7 +445,7 @@
 
       if (currentStep === 1) {
         triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, () => setTimeout(debouncedNextStep, 10000));
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 2) {
         hideCanvas();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
@@ -495,7 +489,6 @@
         hideCanvas();
         noLoop();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
-        setTimeout(debouncedNextStep, 15000);
       } else if (currentStep === 7) {
         hideCanvas();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
@@ -521,9 +514,17 @@
       document.getElementById('continueButton').style.display = currentStep > 0 && currentStep < 7 ? 'block' : 'none';
       updateContinueButtonState();
 
-      if (currentStep === 0 || currentStep === 1) {
+      if (currentStep === 0) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50, currentStep === 1 ? () => setTimeout(debouncedNextStep, 10000) : null);
+        const step0Buttons = document.getElementById('step0Buttons');
+        step0Buttons.innerHTML = `
+          <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
+          <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
+        `;
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+      } else if (currentStep === 1) {
+        hideCanvas();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 2) {
         hideCanvas();
         document.getElementById('portraitGallery').style.display = 'none';
@@ -577,7 +578,6 @@
         hideCanvas();
         noLoop();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
-        setTimeout(debouncedNextStep, 15000);
       }
     }
 
@@ -608,6 +608,7 @@
     }
 
     function restart() {
+      // Reset all state variables
       currentStep = 0;
       language = 'ru';
       img = null;
@@ -615,19 +616,41 @@
       isPaused = false;
       particles = [];
       quantumStates = [];
+      isCanvasReady = false;
 
-      hideCanvas();
-      document.getElementById('portraitGallery').style.display = 'none';
+      // Clear and hide canvas
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
       noLoop();
 
+      // Hide gallery and authors page
+      document.getElementById('portraitGallery').style.display = 'none';
+      document.getElementById('authorsPage').style.display = 'none';
+
+      // Reset all steps
       document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
 
+      // Reset step0 to initial state
       const step0Element = document.getElementById('step0');
       step0Element.classList.add('active');
+      const step0Buttons = document.getElementById('step0Buttons');
+      step0Buttons.innerHTML = `
+        <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
+        <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
+      `;
+
+      // Hide navigation buttons
       document.getElementById('backButton').style.display = 'none';
       document.getElementById('continueButton').style.display = 'none';
       updateContinueButtonState();
+
+      // Reset text
       typeText('typewriter0', translations.step0[language], 50);
+
+      // Reinitialize canvas setup
+      setup();
     }
 
     window.onload = () => {
@@ -675,11 +698,7 @@
         typewriter2.innerHTML = '';
         const step2Buttons = document.getElementById('step2Buttons');
         step2Buttons.innerHTML = '';
-        typeText('typewriter2', translations.step2_after[language], 50, () => {
-          setTimeout(() => {
-            if (img) debouncedNextStep();
-          }, 10000);
-        });
+        typeText('typewriter2', translations.step2_after[language], 50);
         document.getElementById('loader').style.display = 'none';
         updateContinueButtonState();
       }, () => {
@@ -755,11 +774,11 @@
 
     function setup() {
       canvas = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
-      canvas.parent('canvasContainer4'); // Изначально привязываем к шагу 4
+      canvas.parent('canvasContainer4');
       pixelDensity(1);
       frameRate(30);
       noLoop();
-      canvas.elt.style.display = 'none'; // Скрываем по умолчанию
+      canvas.elt.style.display = 'none';
 
       canvas.elt.addEventListener('click', function() {
         if (currentStep === 5) {
