@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quantum Portraits</title>
-  <!-- Используем CDN для загрузки p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
     body {
@@ -17,22 +16,24 @@
       overflow-y: auto;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
     }
     .container {
       position: relative;
       width: 90%;
-      max-width: 1200px;
+      max-width: 800px;
       min-height: 100vh;
-      padding: 20px 0;
+      padding: 40px 20px;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
     }
     .step {
       display: none;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       width: 100%;
       flex-grow: 1;
     }
@@ -41,39 +42,58 @@
     }
     .text-container {
       width: 100%;
-      padding: 10px;
-      padding-top: 80px;
-      word-wrap: break-word;
+      padding: 20px;
       text-align: center;
       margin-bottom: 20px;
       flex-shrink: 0;
+    }
+    .text-container p {
+      margin: 15px 0;
+      line-height: 1.6;
     }
     .typewriter {
       font-size: 1.2rem;
       line-height: 1.5;
       white-space: pre-wrap;
+      color: #e7c2f4;
+      text-shadow: 0 0 10px #d800ff;
+    }
+    .typewriter.status {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #e7c2f4;
+      text-shadow: 0 0 15px #d800ff;
+    }
+    .typewriter.outcome {
+      background: #fff;
+      color: #000;
+      padding: 10px;
+      border: 2px solid #e7c2f4;
+      text-shadow: none;
+      display: inline-block;
     }
     .button-container {
       width: 100%;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      gap: 15px;
       padding: 10px;
       flex-shrink: 0;
     }
     .button {
       padding: 10px 20px;
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 2px solid #e7c2f4;
+      color: #e7c2f4;
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, text-shadow 0.3s;
+      font-size: 1rem;
     }
     .button:hover, .button:focus {
       background: #333;
-      outline: 2px solid #fff;
+      text-shadow: 0 0 10px #d800ff;
     }
     .button:disabled {
       opacity: 0.5;
@@ -82,8 +102,8 @@
     .save-button {
       padding: 10px 20px;
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 2px solid #e7c2f4;
+      color: #e7c2f4;
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
       transition: background 0.3s;
@@ -91,6 +111,7 @@
     }
     .save-button:hover, .save-button:focus {
       background: #333;
+      text-shadow: 0 0 10px #d800ff;
     }
     .back-button {
       position: fixed;
@@ -98,8 +119,8 @@
       left: 20px;
       padding: 10px 20px;
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 2px solid #e7c2f4;
+      color: #e7c2f4;
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
       transition: background 0.3s;
@@ -107,33 +128,34 @@
     }
     .back-button:hover, .back-button:focus {
       background: #333;
-    }
-    .continue-button {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: none;
-      border: 1px solid #fff;
-      color: #fff;
-      font-family: 'Courier New', Courier, monospace;
-      cursor: pointer;
-      transition: background 0.3s;
-      z-index: 10;
-    }
-    .continue-button:hover, .continue-button:focus {
-      background: #333;
+      text-shadow: 0 0 10px #d800ff;
     }
     canvas {
       display: none;
-      border: 2px solid #fff;
+      border: 2px solid #e7c2f4;
       width: 100%;
+      max-width: 512px;
       height: auto;
       max-height: calc(100vh - 250px);
       object-fit: contain;
       margin: 20px 0;
       z-index: 1;
       cursor: pointer;
+    }
+    .user-image {
+      display: none;
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: contain;
+      margin: 20px;
+      border: 2px solid #e7c2f4;
+    }
+    .canvas-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
     }
     #noiseOverlay {
       position: fixed;
@@ -143,7 +165,7 @@
       height: 100%;
       pointer-events: none;
       opacity: 0;
-      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVGhD7c0hAQAgDAAx3L9tN4ZgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg4D8P4wF1N8lKtwAAAABJRU5ErkJggg==');
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVGhD7c0hAQAgDAAx3L9tN4ZgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg thingyGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg4D8P4wF1N8lKtwAAAABJRU5ErkJggg==');
       animation: noise 0.1s infinite;
     }
     @keyframes noise {
@@ -181,6 +203,7 @@
       height: 100px;
       background: #333;
       cursor: pointer;
+      border: 2px solid #e7c2f4;
     }
     #authorsPage {
       display: none;
@@ -191,25 +214,42 @@
       height: 100%;
       background: #000;
       z-index: 20;
-      padding: 20px;
+      padding: 40px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     #loader {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: #fff;
+      color: #e7c2f4;
       font-size: 1.5rem;
       display: none;
     }
+    .other-cursor {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #e7c2f4;
+      border-radius: 50%;
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 5;
+    }
 
-    /* Адаптивные стили */
     @media (max-width: 768px) {
+      .container {
+        padding: 20px 10px;
+      }
       .text-container {
         font-size: 1rem;
-        padding: 5px;
-        padding-top: 120px;
+      }
+      .typewriter.status {
+        font-size: 1.2rem;
       }
       .button-container {
         flex-direction: column;
@@ -217,20 +257,25 @@
       }
       .button, .save-button {
         width: 80%;
-        margin: 5px 0;
+        margin: 10px 0;
       }
       canvas {
         max-height: calc(100vh - 300px);
       }
-      .back-button, .continue-button {
-        top: 10px;
-        padding: 8px 15px;
+      .user-image {
+        max-width: 150px;
+        max-height: 150px;
+      }
+      .canvas-container {
+        flex-direction: column;
       }
     }
     @media (max-width: 480px) {
       .text-container {
         font-size: 0.9rem;
-        padding-top: 150px;
+      }
+      .typewriter.status {
+        font-size: 1.1rem;
       }
       .portrait {
         width: 80px;
@@ -238,6 +283,10 @@
       }
       canvas {
         max-height: calc(100vh - 350px);
+      }
+      .user-image {
+        max-width: 120px;
+        max-height: 120px;
       }
     }
   </style>
@@ -247,13 +296,10 @@
   <div class="flash" id="flashEffect"></div>
   <div id="loader">Загрузка...</div>
   <div class="container">
-    <!-- Кнопка "Назад" -->
     <button class="back-button" id="backButton" style="display: none;" aria-label="Вернуться на предыдущий шаг" onclick="debouncedGoBack()">Назад / Back</button>
-    <!-- Кнопка "Продолжить" -->
-    <button class="continue-button" id="continueButton" style="display: none;" disabled aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
 
     <!-- Шаг 0: Выбор языка -->
-    <div class="step" id="step0">
+    <div class="step active" id="step0">
       <div class="text-container">
         <div class="typewriter" id="typewriter0"></div>
       </div>
@@ -266,15 +312,17 @@
     <!-- Шаг 1: Приветствие -->
     <div class="step" id="step1">
       <div class="text-container">
-        <div class="typewriter" id="typewriter1"></div>
+        <div class="typewriter status" id="typewriter1"></div>
       </div>
-      <div class="button-container"></div>
+      <div class="button-container">
+        <button class="button" aria-label="Начать" onclick="debouncedNextStep()">${language === 'ru' ? 'Начать / Start' : 'Start'}</button>
+      </div>
     </div>
 
     <!-- Шаг 2: Загрузка портрета -->
     <div class="step" id="step2">
       <div class="text-container">
-        <div class="typewriter" id="typewriter2"></div>
+        <div class="typewriter status" id="typewriter2"></div>
       </div>
       <div class="button-container" id="step2Buttons">
         <input type="file" id="imageInput" accept="image/*" style="display: none;">
@@ -283,52 +331,66 @@
       </div>
     </div>
 
-    <!-- Шаг 3: Инициализация -->
+    <!-- Шаг 3: Промежуточный -->
     <div class="step" id="step3">
       <div class="text-container">
         <div class="typewriter" id="typewriter3"></div>
       </div>
-      <div class="button-container"></div>
+      <div class="button-container">
+        <button class="button" aria-label="Инициализировать" onclick="debouncedNextStep()">Инициализировать / Initialize</button>
+      </div>
     </div>
 
-    <!-- Шаг 4: Наблюдение -->
+    <!-- Шаг 4: Инициализация -->
     <div class="step" id="step4">
       <div class="text-container">
-        <div class="typewriter" id="typewriter4"></div>
+        <div class="typewriter status" id="typewriter4"></div>
       </div>
-      <div class="canvas-container" id="canvasContainer4"></div>
-      <div class="button-container"></div>
+      <div class="button-container">
+        <button class="button" aria-label="Запустить коллапс" onclick="debouncedNextStep()">Запустить коллапс / Trigger Collapse</button>
+      </div>
     </div>
 
-    <!-- Шаг 5: Фиксация -->
+    <!-- Шаг 5: Наблюдение -->
     <div class="step" id="step5">
       <div class="text-container">
-        <div class="typewriter" id="typewriter5"></div>
+        <div class="typewriter status" id="typewriter5"></div>
       </div>
-      <button class="save-button" id="saveButton" style="display: none;" aria-label="Сохранить изображение" onclick="saveCurrentState()">Сохранить изображение / Save Image</button>
-      <div class="canvas-container" id="canvasContainer5"></div>
-      <div class="button-container"></div>
+      <div class="canvas-container" id="canvasContainer5">
+        <img id="userImage" class="user-image" style="display: none;">
+      </div>
+      <button class="continue-button" id="continueButton" style="display: none;" aria-label="Продолжить" onclick="debouncedNextStep()">Продолжить / Continue</button>
     </div>
 
-    <!-- Шаг 6: Интерпретация -->
+    <!-- Шаг 6: Фиксация -->
     <div class="step" id="step6">
       <div class="text-container">
-        <div class="typewriter" id="typewriter6"></div>
+        <div class="typewriter status" id="typewriter6"></div>
+      </div>
+      <div class="canvas-container" id="canvasContainer6"></div>
+      <button class="save-button" id="saveButton" style="display: none;" aria-label="Зафиксировать наблюдение" onclick="fixObservation()">Зафиксировать наблюдение / Fix Observation</button>
+    </div>
+
+    <!-- Шаг 7: Реакция системы -->
+    <div class="step" id="step7">
+      <div class="text-container">
+        <div class="typewriter status" id="typewriter7"></div>
       </div>
       <div class="button-container">
-        <button class="button" aria-label="Поделиться наблюдением" onclick="shareObservation()">ПОДЕЛИТЬСЯ НАБЛЮДЕНИЕМ / SHARE OBSERVATION</button>
+        <button class="button" aria-label="Поделиться наблюдением" onclick="shareObservation()">Поделиться наблюдением / Share Observation</button>
+        <button class="button continue-button" aria-label="Продолжить" onclick="debouncedNextStep()">Продолжить / Continue</button>
       </div>
     </div>
 
-    <!-- Шаг 7: Завершение -->
-    <div class="step" id="step7">
+    <!-- Шаг 8: Завершение -->
+    <div class="step" id="step8">
       <div class="text-container">
-        <div class="typewriter" id="typewriter7"></div>
+        <div class="typewriter status" id="typewriter8"></div>
       </div>
       <div class="button-container">
-        <button class="button" aria-label="Начать заново" onclick="restart()">↻ НАЧАТЬ СНАЧАЛА / RESTART</button>
-        <button class="button" aria-label="Перейти в архив" onclick="goToArchive()">⧉ ПЕРЕЙТИ В АРХИВ НАБЛЮДЕНИЙ / GO TO ARCHIVE</button>
-        <button class="button" aria-label="О разработчиках" onclick="openAuthors()">ОБ АВТОРАХ / ABOUT US</button>
+        <button class="button" aria-label="Вернуться к неопределенности" onclick="returnToUncertainty()">Вернуться к неопределенности / Return to Uncertainty</button>
+        <button class="button" aria-label="Перейти в архив" onclick="goToArchive()">Сеть реакций / Network of Reactions</button>
+        <button class="button" aria-label="О разработчиках" onclick="openAuthors()">Об авторах / About Us</button>
       </div>
     </div>
 
@@ -345,12 +407,14 @@
     let currentStep = 0;
     let language = 'ru';
     let img;
+    let userImageUrl;
     let frame = 0;
     let isPaused = false;
     let particles = [];
     let quantumStates = [];
     let canvas;
     let isCanvasReady = false;
+    let formationPhase = 0;
 
     const portraitUrls = [
       'images/portrait1.png',
@@ -359,18 +423,42 @@
     ];
 
     const translations = {
-      step0: { ru: 'Пожалуйста, выберите язык\nPlease select a language', en: 'Пожалуйста, выберите язык\nPlease select a language' },
-      step1: { ru: 'СТАТУС: НАБЛЮДАТЕЛЬ ПОДКЛЮЧЁН\n> Чему Шредингер может научить нас в области\nцифровой идентификации?\n> Добро пожаловать в экспериментальную зону.\n> Здесь наблюдение = вмешательство.', en: 'STATUS: OBSERVER CONNECTED\n> What can Schrödinger teach us about\ndigital identification?\n> Welcome to the experimental zone.\n> Here, observation = interference.' },
-      step2: { ru: 'Шаг 1: Сканируйте лицо суперпозиции.\nВы можете загрузить изображение или выбрать вариант из архива.', en: 'Step 1: Scan the face of superposition.\nYou can upload an image or select from the archive.' },
-      step2_after: { ru: '> Изображение принято.\n> Запускается волновая функция.\n> Система готова к инициализации.', en: '> Image accepted.\n> Wave function launching.\n> System ready for initialization.' },
-      step3: { ru: 'Шаг 2: Инициализация\n> Изображение преобразовано в пиксельную\nсетку.\n> Каждому пикселю назначены параметры (x, y,\nbrightness, color).\n> На их основе построена волновая функция: ψ(x,\ny, t).\nУравнение эволюции:\niℏ ∂ψ/∂t = Ĥψ, где Ĥ = -½∇² + V(x, y)\n> Потенциал V(x, y) формируется из визуальных\nхарактеристик изображения.\n> Система переходит в режим временной\nсимуляции.\n> Портрет существует как совокупность\nвозможных состояний.', en: 'Step 2: Initialization\n> Image converted into a pixel grid.\n> Each pixel assigned parameters (x, y,\nbrightness, color).\n> Based on them, a wave function is built: ψ(x,\ny, t).\nEvolution equation:\niℏ ∂ψ/∂t = Ĥψ, where Ĥ = -½∇² + V(x, y)\n> Potential V(x, y) is formed from the visual\ncharacteristics of the image.\n> System enters temporal simulation mode.\n> The portrait exists as a set of possible\nstates.' },
-      step4: { ru: 'Шаг 3: НАЧНИТЕ НАБЛЮДЕНИЕ\n> Двигайте курсором по изображению.\n> Каждый ваш жест запускает коллапс.\n> Система реагирует. Наблюдаемый образ\nформируется здесь и сейчас.', en: 'Step 3: BEGIN OBSERVATION\n> Move the cursor over the image.\n> Each gesture triggers a collapse.\n> The system reacts. The observed image is\nformed here and now.' },
-      step5: { ru: 'Шаг 4: ФИКСАЦИЯ\n> Портрет — это процесс.\n> Но ты можешь зафиксировать один миг.\n> Это будет один из возможных тебя.', en: 'Step 4: FIXATION\n> A portrait is a process.\n> But you can fix a single moment.\n> This will be one of your possible selves.' },
-      step6: { ru: 'Шаг 5: РЕАКЦИЯ СИСТЕМЫ\n> Это не портрет.\n> Это — реакция системы на тебя.\n> Ты повлиял на исход.', en: 'Step 5: SYSTEM REACTION\n> This is not a portrait.\n> This is the system\'s reaction to you.\n> You influenced the outcome.' },
-      step7: { ru: 'Ты — не единственный наблюдатель.\nКаждое наблюдение — это акт, формирующий\nобраз. Здесь ты — одновременно субъект и\nобъект.', en: 'You are not the only observer.\nEach observation is an act that shapes the\nimage. Here, you are both subject and object.' }
+      step0: { ru: 'Пожалуйста, выберите язык\nPlease select a language', en: 'Please select a language' },
+      step1: { 
+        ru: 'СТАТУС: НАБЛЮДАТЕЛЬ ПОДКЛЮЧЕН\n\nЧему Шредингер может научить нас в области\nцифровой идентификации?\n\nДобро пожаловать в экспериментальную зону.\n\nЗдесь наблюдение = вмешательство.', 
+        en: 'STATUS: OBSERVER CONNECTED\n\nWhat can Schrödinger teach us about\ndigital identification?\n\nWelcome to the experimental zone.\n\nHere, observation = interference.' 
+      },
+      step2: { 
+        ru: 'ШАГ 1: НАЧАЛО\n\nСканируйте лицо суперпозиции.\n\nЗагрузите изображение, включите камеру или выберите из архива.', 
+        en: 'STEP 1: BEGINNING\n\nScan the face of superposition.\n\nUpload an image, enable the camera, or select from the archive.' 
+      },
+      step3: { 
+        ru: '> Изображение принято.\n> Запускается волновая функция.\n> Система готова к инициализации.', 
+        en: '> Image accepted.\n> Wave function launching.\n> System ready for initialization.' 
+      },
+      step4: { 
+        ru: 'ШАГ 2: ИНИЦИАЛИЗАЦИЯ\n\n> Изображение преобразовано в пиксельную сетку.\n> Каждому пикселю назначены параметры (x, y, brightness, color).\n> На их основе построена волновая функция: ψ(x, y, t).\n\nУравнение эволюции:\niℏ ∂ψ/∂t = Ĥψ, где Ĥ = -½∇² + V(x, y)\n\n> Потенциал V(x, y) формируется из визуальных характеристик изображения.\n> Система переходит в режим временной симуляции.\n> Портрет существует как совокупность возможных состояний.', 
+        en: 'STEP 2: INITIALIZATION\n\n> Image converted into a pixel grid.\n> Each pixel assigned parameters (x, y, brightness, color).\n> Based on them, a wave function is built: ψ(x, y, t).\n\nEvolution equation:\niℏ ∂ψ/∂t = Ĥψ, where Ĥ = -½∇² + V(x, y)\n\n> Potential V(x, y) is formed from the visual characteristics of the image.\n> System enters temporal simulation mode.\n> The portrait exists as a set of possible states.' 
+      },
+      step5: { 
+        ru: 'ШАГ 3: НАЧНИТЕ НАБЛЮДЕНИЕ\n\nДвигайте курсором по изображению.\nКаждый ваш жест запускает коллапс.\nСистема реагирует.\nНаблюдаемый образ формируется здесь и сейчас.', 
+        en: 'STEP 3: BEGIN OBSERVATION\n\nMove the cursor over the image.\nEach gesture triggers a collapse.\nThe system reacts.\nThe observed image is formed here and now.' 
+      },
+      step6: { 
+        ru: 'ШАГ 4: ФИКСАЦИЯ\n\nПортрет — это процесс.\nНо ты можешь зафиксировать один миг.\nЭто будет один из возможных тебя.', 
+        en: 'STEP 4: FIXATION\n\nA portrait is a process.\nBut you can fix a single moment.\nThis will be one of your possible selves.' 
+      },
+      step7: { 
+        ru: 'ШАГ 5: РЕАКЦИЯ СИСТЕМЫ\n\nЭто не портрет.\nЭто — реакция системы на тебя.\n\nТы повлиял на исход', 
+        en: 'STEP 5: SYSTEM REACTION\n\nThis is not a portrait.\nThis is the system\'s reaction to you.\n\nYou influenced the outcome' 
+      },
+      step8: { 
+        ru: 'ТЫ - НЕ ЕДИНСТВЕННЫЙ НАБЛЮДАТЕЛЬ\n\nКаждое наблюдение — это акт, формирующий образ.\nЗдесь ты — одновременно субъект и объект.', 
+        en: 'YOU ARE NOT THE ONLY OBSERVER\n\nEach observation is an act that shapes the image.\nHere, you are both subject and object.' 
+      }
     };
 
-    // Debouncing для предотвращения множественных кликов
+    // Debouncing
     function debounce(func, wait) {
       let timeout;
       return function executedFunction(...args) {
@@ -388,7 +476,6 @@
 
     function selectLanguage(lang) {
       language = lang;
-      updateContinueButtonText();
       debouncedNextStep();
     }
 
@@ -419,10 +506,23 @@
       }
     }
 
-    function nextStep() {
-      if (currentStep >= 7) return;
+    function showUserImage() {
+      const userImage = document.getElementById('userImage');
+      if (userImageUrl) {
+        userImage.src = userImageUrl;
+        userImage.style.display = 'block';
+      }
+    }
 
-      if (currentStep >= 2 && !img) {
+    function hideUserImage() {
+      const userImage = document.getElementById('userImage');
+      userImage.style.display = 'none';
+    }
+
+    function nextStep() {
+      if (currentStep >= 8) return;
+
+      if (currentStep === 2 && !img) {
         alert(language === 'ru' ? 'Пожалуйста, загрузите фото или выберите из архива.' : 'Please upload a photo or select from the archive.');
         return;
       }
@@ -440,15 +540,15 @@
 
       nextStepElement.classList.add('active');
       document.getElementById('backButton').style.display = currentStep > 0 ? 'block' : 'none';
-      document.getElementById('continueButton').style.display = currentStep > 0 && currentStep < 7 ? 'block' : 'none';
-      updateContinueButtonState();
+      document.getElementById('continueButton').style.display = (currentStep === 5 || currentStep === 7) ? 'block' : 'none';
 
       if (currentStep === 1) {
         triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 2) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideUserImage();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 3) {
         if (!img) {
           debouncedGoBack();
@@ -456,42 +556,62 @@
         }
         triggerFlash();
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideUserImage();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 700, 0, 35);
       } else if (currentStep === 4) {
-        if (isCanvasReady) {
-          showCanvas('canvasContainer4');
-          loop();
-        } else {
-          console.error('Шаг 4: Канва не готова!');
-          setTimeout(() => {
-            if (isCanvasReady) {
-              showCanvas('canvasContainer4');
-              loop();
-            }
-          }, 500);
-        }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideCanvas();
+        hideUserImage();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 5) {
         if (isCanvasReady) {
           showCanvas('canvasContainer5');
-          if (!isPaused) loop();
+          showUserImage();
+          formationPhase = 0;
+          loop();
         } else {
           console.error('Шаг 5: Канва не готова!');
           setTimeout(() => {
             if (isCanvasReady) {
               showCanvas('canvasContainer5');
+              showUserImage();
+              formationPhase = 0;
+              loop();
+            }
+          }, 500);
+        }
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
+      } else if (currentStep === 6) {
+        if (isCanvasReady) {
+          showCanvas('canvasContainer6');
+          showUserImage();
+          if (!isPaused) loop();
+        } else {
+          console.error('Шаг 6: Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer6');
+              showUserImage();
               if (!isPaused) loop();
             }
           }, 500);
         }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
-      } else if (currentStep === 6) {
-        hideCanvas();
-        noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 7) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideUserImage();
+        noLoop();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35, () => {
+          const typewriter7 = document.getElementById('typewriter7');
+          const outcomeText = document.createElement('p');
+          outcomeText.className = 'typewriter outcome';
+          outcomeText.textContent = language === 'ru' ? 'Ты повлиял на исход' : 'You influenced the outcome';
+          typewriter7.appendChild(outcomeText);
+        });
+      } else if (currentStep === 8) {
+        hideCanvas();
+        hideUserImage();
+        noLoop();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       }
     }
 
@@ -511,77 +631,100 @@
 
       previousStepElement.classList.add('active');
       document.getElementById('backButton').style.display = currentStep > 0 ? 'block' : 'none';
-      document.getElementById('continueButton').style.display = currentStep > 0 && currentStep < 7 ? 'block' : 'none';
-      updateContinueButtonState();
+      document.getElementById('continueButton').style.display = (currentStep === 5 || currentStep === 7) ? 'block' : 'none';
 
       if (currentStep === 0) {
         hideCanvas();
+        hideUserImage();
         const step0Buttons = document.getElementById('step0Buttons');
         step0Buttons.innerHTML = `
           <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
           <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
         `;
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 1) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideUserImage();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 2) {
         hideCanvas();
+        hideUserImage();
         document.getElementById('portraitGallery').style.display = 'none';
         noLoop();
         particles = [];
         quantumStates = [];
         frame = 0;
+        formationPhase = 0;
         isPaused = false;
         img = null;
+        userImageUrl = null;
         const step2Buttons = document.getElementById('step2Buttons');
         step2Buttons.innerHTML = `
           <input type="file" id="imageInput" accept="image/*" style="display: none;">
-          <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">${language === 'ru' ? 'Загрузить фото' : 'Upload Photo'}</button>
-          <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">${language === 'ru' ? 'Выбрать готовое' : 'Select from Archive'}</button>
+          <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">${language === 'ru' ? 'Загрузить фото / Upload Photo' : 'Upload Photo'}</button>
+          <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">${language === 'ru' ? 'Выбрать готовое / Select from Archive' : 'Select from Archive'}</button>
         `;
-        typeText('typewriter2', translations.step2[language], 50);
+        typeText('typewriter2', translations.step2[language], 600, 70, 35);
       } else if (currentStep === 3) {
         hideCanvas();
+        hideUserImage();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 700, 0, 35);
       } else if (currentStep === 4) {
-        if (isCanvasReady) {
-          showCanvas('canvasContainer4');
-          if (!isPaused) loop();
-        } else {
-          console.error('Шаг 4 (назад): Канва не готова!');
-          setTimeout(() => {
-            if (isCanvasReady) {
-              showCanvas('canvasContainer4');
-              if (!isPaused) loop();
-            }
-          }, 500);
-        }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        hideCanvas();
+        hideUserImage();
+        noLoop();
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
       } else if (currentStep === 5) {
         if (isCanvasReady) {
           showCanvas('canvasContainer5');
+          showUserImage();
+          formationPhase = 0;
           if (!isPaused) loop();
         } else {
           console.error('Шаг 5 (назад): Канва не готова!');
           setTimeout(() => {
             if (isCanvasReady) {
               showCanvas('canvasContainer5');
+              showUserImage();
+              formationPhase = 0;
+              if (!isPaused) loop();
+            }
+          }, 500);
+        }
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
+      } else if (currentStep === 6) {
+        if (isCanvasReady) {
+          showCanvas('canvasContainer6');
+          showUserImage();
+          if (!isPaused) loop();
+        } else {
+          console.error('Шаг 6 (назад): Канва не готова!');
+          setTimeout(() => {
+            if (isCanvasReady) {
+              showCanvas('canvasContainer6');
+              showUserImage();
               if (!isPaused) loop();
             }
           }, 500);
         }
         document.getElementById('saveButton').style.display = isPaused ? 'block' : 'none';
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
-      } else if (currentStep === 6) {
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
+      } else if (currentStep === 7) {
         hideCanvas();
+        hideUserImage();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35, () => {
+          const typewriter7 = document.getElementById('typewriter7');
+          const outcomeText = document.createElement('p');
+          outcomeText.className = 'typewriter outcome';
+          outcomeText.textContent = language === 'ru' ? 'Ты повлиял на исход' : 'You influenced the outcome';
+          typewriter7.appendChild(outcomeText);
+        });
       }
     }
 
-    function typeText(elementId, text, speed, callback) {
+    function typeText(elementId, text, initialDelay, statusSpeed, textSpeed, callback) {
       let i = 0;
       const element = document.getElementById(elementId);
       if (!element) {
@@ -589,50 +732,67 @@
         return;
       }
       element.innerHTML = '';
-      function type() {
-        if (i < text.length) {
-          element.innerHTML += text.charAt(i);
-          i++;
-          setTimeout(type, speed);
-        } else if (callback) {
-          callback();
+      const lines = text.split('\n');
+      let currentLine = 0;
+
+      function typeLine() {
+        if (currentLine >= lines.length) {
+          if (callback) callback();
+          return;
         }
+        const line = lines[currentLine];
+        const isStatusLine = line.match(/^(СТАТУС|STATUS|ШАГ|STEP|TЫ|YOU)/i);
+        const speed = isStatusLine ? statusSpeed : textSpeed;
+        const delay = isStatusLine && currentLine === 0 ? initialDelay : 0;
+        let j = 0;
+        const lineElement = document.createElement('p');
+        lineElement.className = isStatusLine ? 'typewriter status' : 'typewriter';
+        element.appendChild(lineElement);
+
+        function typeChar() {
+          if (j < line.length) {
+            lineElement.innerHTML += line.charAt(j);
+            j++;
+            setTimeout(typeChar, speed);
+          } else {
+            currentLine++;
+            setTimeout(typeLine, 100);
+          }
+        }
+        setTimeout(typeChar, delay);
       }
-      type();
+      setTimeout(typeLine, initialDelay);
     }
 
     function triggerFlash() {
       document.getElementById('noiseOverlay').style.opacity = '0.1';
       setTimeout(() => document.getElementById('noiseOverlay').style.opacity = '0', 1000);
       document.getElementById('flashEffect').classList.add('active');
+      setTimeout(() => document.getElementById('flashEffect').classList.remove('active'), 300);
     }
 
     function restart() {
-      // Reset all state variables
       currentStep = 0;
       language = 'ru';
       img = null;
+      userImageUrl = null;
       frame = 0;
+      formationPhase = 0;
       isPaused = false;
       particles = [];
       quantumStates = [];
       isCanvasReady = false;
 
-      // Clear and hide canvas
       if (canvas) {
         canvas.remove();
         canvas = null;
       }
       noLoop();
 
-      // Hide gallery and authors page
       document.getElementById('portraitGallery').style.display = 'none';
       document.getElementById('authorsPage').style.display = 'none';
-
-      // Reset all steps
       document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
 
-      // Reset step0 to initial state
       const step0Element = document.getElementById('step0');
       step0Element.classList.add('active');
       const step0Buttons = document.getElementById('step0Buttons');
@@ -640,25 +800,18 @@
         <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
         <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
       `;
-
-      // Hide navigation buttons
       document.getElementById('backButton').style.display = 'none';
       document.getElementById('continueButton').style.display = 'none';
-      updateContinueButtonState();
-
-      // Reset text
-      typeText('typewriter0', translations.step0[language], 50);
-
-      // Reinitialize canvas setup
+      typeText('typewriter0', translations.step0[language], 600, 70, 35);
       setup();
     }
 
     window.onload = () => {
       document.getElementById('step0').classList.add('active');
-      typeText('typewriter0', translations.step0[language], 50);
+      typeText('typewriter0', translations.step0[language], 600, 70, 35);
       window.onerror = function(message, source, lineno, colno, error) {
         console.error(`Ошибка: ${message} в ${source}:${lineno}:${colno}`);
-        document.body.innerHTML = `<div style="color: white; text-align: center; padding-top: 50px;">
+        document.body.innerHTML = `<div style="color: #e7c2f4; text-align: center; padding-top: 50px;">
           Произошла ошибка: ${message}. Пожалуйста, обновите страницу или проверьте консоль для деталей.
         </div>`;
       };
@@ -693,23 +846,27 @@
       document.getElementById('loader').style.display = 'block';
       loadImage(url, (loadedImg) => {
         img = loadedImg;
+        userImageUrl = url;
         document.getElementById('portraitGallery').style.display = 'none';
         const typewriter2 = document.getElementById('typewriter2');
         typewriter2.innerHTML = '';
         const step2Buttons = document.getElementById('step2Buttons');
         step2Buttons.innerHTML = '';
-        typeText('typewriter2', translations.step2_after[language], 50);
+        typeText('typewriter2', translations.step3[language], 700, 0, 35, () => {
+          const buttonContainer = document.getElementById('step2Buttons');
+          buttonContainer.innerHTML = `
+            <button class="button" aria-label="Инициализировать" onclick="debouncedNextStep()">Инициализировать / Initialize</button>
+          `;
+        });
         document.getElementById('loader').style.display = 'none';
-        updateContinueButtonState();
       }, () => {
         document.getElementById('loader').style.display = 'none';
         alert(language === 'ru' ? 'Ошибка загрузки изображения. Попробуйте другое.' : 'Image loading error. Please try another.');
-        updateContinueButtonState();
       });
     }
 
     function openAuthors() {
-      document.getElementById('authorsPage').style.display = 'block';
+      document.getElementById('authorsPage').style.display = 'flex';
     }
 
     function closeAuthors() {
@@ -736,8 +893,34 @@
       }
     }
 
+    function fixObservation() {
+      if (!isPaused) {
+        isPaused = true;
+        noLoop();
+        document.getElementById('saveButton').style.display = 'block';
+        console.log('Шаг 6: Пауза, saveButton отображается');
+        saveCurrentState();
+      }
+    }
+
+    function returnToUncertainty() {
+      const currentStepElement = document.querySelector(`#step${currentStep}`);
+      if (currentStepElement) currentStepElement.classList.remove('active');
+      currentStep = 5;
+      const targetStepElement = document.querySelector(`#step${currentStep}`);
+      targetStepElement.classList.add('active');
+      document.getElementById('backButton').style.display = 'block';
+      document.getElementById('continueButton').style.display = 'block';
+      if (isCanvasReady) {
+        showCanvas('canvasContainer5');
+        showUserImage();
+        formationPhase = 0;
+        if (!isPaused) loop();
+      }
+      typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 600, 70, 35);
+    }
+
     function saveCurrentState() {
-      console.log('Сохранение изображения...');
       try {
         if (!canvas) {
           alert(language === 'ru' ? 'Canvas не найден. Убедитесь, что изображение отображается.' : 'Canvas not found. Ensure the image is displayed.');
@@ -757,12 +940,23 @@
       }
     }
 
-    function updateContinueButtonText() {
-      document.getElementById('continueButton').textContent = language === 'ru' ? 'Продолжить / Continue' : 'Continue';
-    }
-
-    function updateContinueButtonState() {
-      document.getElementById('continueButton').disabled = currentStep === 2 && !img;
+    // Эффект присутствия других наблюдателей (заглушка)
+    let otherCursors = [];
+    function simulateOtherCursors() {
+      if (currentStep === 5) {
+        if (random() < 0.02) {
+          const cursor = document.createElement('div');
+          cursor.className = 'other-cursor';
+          cursor.style.left = `${random(windowWidth)}px`;
+          cursor.style.top = `${random(windowHeight)}px`;
+          document.body.appendChild(cursor);
+          otherCursors.push(cursor);
+          setTimeout(() => {
+            cursor.remove();
+            otherCursors = otherCursors.filter(c => c !== cursor);
+          }, 3000);
+        }
+      }
     }
 
     let noiseScale = 0.02;
@@ -774,25 +968,15 @@
 
     function setup() {
       canvas = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
-      canvas.parent('canvasContainer4');
+      canvas.parent('canvasContainer5');
       pixelDensity(1);
       frameRate(30);
       noLoop();
       canvas.elt.style.display = 'none';
 
       canvas.elt.addEventListener('click', function() {
-        if (currentStep === 5) {
-          if (!isPaused) {
-            isPaused = true;
-            noLoop();
-            document.getElementById('saveButton').style.display = 'block';
-            console.log('Шаг 5: Пауза, saveButton отображается');
-          } else {
-            isPaused = false;
-            loop();
-            document.getElementById('saveButton').style.display = 'none';
-            console.log('Шаг 5: Возобновление');
-          }
+        if (currentStep === 6 && !isPaused) {
+          fixObservation();
         }
       });
 
@@ -814,6 +998,7 @@
     }
 
     function draw() {
+      simulateOtherCursors();
       if (!img || !img.width || quantumStates.length === 0) {
         if (img && img.width) {
           let centerX = width / 2;
@@ -900,11 +1085,13 @@
       }
 
       frame += 1;
-      let transitionPhase = map(frame, 0, 120, 0, 1);
+      if (formationPhase < 1) {
+        formationPhase += 0.01;
+      }
 
       background(0);
 
-      let ghostAlpha = 150 * (1 - transitionPhase * 0.6);
+      let ghostAlpha = 150 * (1 - formationPhase * 0.6);
       tint(255, ghostAlpha);
       image(img, width / 2 - 128 * (min(width, height) / 512), height / 2 - 128 * (min(width, height) / 512), 256 * (min(width, height) / 512), 256 * (min(width, height) / 512));
       noTint();
@@ -917,7 +1104,7 @@
       for (let i = 0; i < particles.length; i++) {
         let particle = particles[i];
         let state = quantumStates[i];
-        if (state.entangledWith !== null) {
+        if (state.entangledWith !== null && formationPhase >= 1) {
           let entangledParticle = particles[state.entangledWith];
           let alpha = 100 * (0.5 + 0.5 * sin(frame * 0.03));
           stroke(255, alpha);
@@ -954,18 +1141,18 @@
         let distFromCenter = dist(particle.baseX, particle.baseY, width / 2, height / 2);
         let maxAmplitude = map(distFromCenter, 0, 128 * (min(width, height) / 512), 20, 60);
         let positionUncertainty = map(d, 0, mouseInfluenceRadius, 0.1, 1);
-        let baseOffsetX = sin(state.phase) * state.amplitude * noiseVal * speedFactor * (maxAmplitude / 150) * positionUncertainty;
-        let baseOffsetY = cos(state.phase) * state.amplitude * noiseVal * speedFactor * (maxAmplitude / 150) * positionUncertainty;
+        let baseOffsetX = sin(state.phase) * state.amplitude * noiseVal * speedFactor * (maxAmplitude / 150) * positionUncertainty * formationPhase;
+        let baseOffsetY = cos(state.phase) * state.amplitude * noiseVal * speedFactor * (maxAmplitude / 150) * positionUncertainty * formationPhase;
 
         let waveOffsetX = 0;
         let waveOffsetY = 0;
         if (particle.waveInfluence > 0 && !isPaused) {
-          waveOffsetX = sin(particle.wavePhase) * 30 * particle.waveInfluence;
-          waveOffsetY = cos(particle.wavePhase) * 30 * particle.waveInfluence;
+          waveOffsetX = sin(particle.wavePhase) * 30 * particle.waveInfluence * formationPhase;
+          waveOffsetY = cos(particle.wavePhase) * 30 * particle.waveInfluence * formationPhase;
         }
 
         let centerDist = dist(particle.x, particle.y, width / 2, height / 2);
-        if (!particle.tunneled && centerDist > 128 * (min(width, height) / 512) && random() < 0.01 && !isPaused) {
+        if (!particle.tunneled && centerDist > 128 * (min(width, height) / 512) && random() < 0.01 && !isPaused && formationPhase >= 1) {
           particle.tunneled = true;
           particle.tunnelTargetX = random(width);
           particle.tunnelTargetY = random(height);
@@ -991,7 +1178,7 @@
         state.phase += 0.02 * speedFactor;
 
         let colorUncertainty = map(d, 0, mouseInfluenceRadius, 0, 0.05);
-        if (random() < colorUncertainty && !isPaused) {
+        if (random() < colorUncertainty && !isPaused && formationPhase >= 1) {
           if (random() < 0.5 && !state.collapsed) {
             let newState = random(state.superpositionStates);
             state.r = newState.r;
@@ -1007,7 +1194,7 @@
           state.brightColor = null;
         }
 
-        if (d < 50 && !state.collapsed && !isPaused) {
+        if (d < 50 && !state.collapsed && !isPaused && formationPhase >= 1) {
           state.collapsed = true;
           let chosenState = random(state.superpositionStates);
           state.r = chosenState.r;
@@ -1035,7 +1222,7 @@
         push();
         translate(particle.x + particle.offsetX, particle.y + particle.offsetY);
         noStroke();
-        let alpha = state.a * (0.5 + 0.5 * sin(frame * 0.05 + state.phase));
+        let alpha = state.a * (0.5 + 0.5 * sin(frame * 0.05 + state.phase)) * formationPhase;
         if (state.brightColor) {
           fill(state.brightColor[0], state.brightColor[1], state.brightColor[2], alpha * 0.8);
         } else {
@@ -1043,13 +1230,13 @@
         }
 
         let uncertainty = map(d, 0, mouseInfluenceRadius, 0, 1);
-        if (random() < uncertainty * 0.02 && !isPaused) particle.shapeType = floor(random(4));
+        if (random() < uncertainty * 0.02 && !isPaused && formationPhase >= 1) particle.shapeType = floor(random(4));
 
         switch (particle.shapeType) {
           case 0:
             beginShape();
             for (let angle = 0; angle < TWO_PI; angle += 0.1) {
-              let r = particle.size * (1 + 0.3 * noise(particle.x * 0.01, particle.y * 0.01, frame * 0.02));
+              let r = particle.size * (1 + 0.3 * noise(particle.x * 0.01, particle.y * 0.01, frame * 0.02)) * formationPhase;
               let x = r * cos(angle);
               let y = r * sin(angle);
               vertex(x, y);
@@ -1057,14 +1244,14 @@
             endShape(CLOSE);
             break;
           case 1:
-            rect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+            rect(-particle.size / 2 * formationPhase, -particle.size / 2 * formationPhase, particle.size * formationPhase, particle.size * formationPhase);
             break;
           case 2:
-            triangle(-particle.size / 2, particle.size / 2, particle.size / 2, particle.size / 2, 0, -particle.size / 2);
+            triangle(-particle.size / 2 * formationPhase, particle.size / 2 * formationPhase, particle.size / 2 * formationPhase, particle.size / 2 * formationPhase, 0, -particle.size / 2 * formationPhase);
             break;
           case 3:
-            let shear = particle.size * 0.3;
-            quad(-particle.size / 2, -particle.size / 2, particle.size / 2 - shear, -particle.size / 2, particle.size / 2, particle.size / 2, -particle.size / 2 + shear, particle.size / 2);
+            let shear = particle.size * 0.3 * formationPhase;
+            quad(-particle.size / 2 * formationPhase, -particle.size / 2 * formationPhase, particle.size / 2 * formationPhase - shear, -particle.size / 2 * formationPhase, particle.size / 2 * formationPhase, particle.size / 2 * formationPhase, -particle.size / 2 * formationPhase + shear, particle.size / 2 * formationPhase);
             break;
         }
         pop();
