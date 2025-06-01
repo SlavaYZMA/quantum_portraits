@@ -11,7 +11,7 @@
       margin: 0;
       padding: 0;
       background-color: #000;
-      color: #fff;
+      color: #fff; /* Измените значение #fff на другой цвет (например, #ff0000 для красного), чтобы изменить цвет текста всей страницы */
       font-family: 'Courier New', Courier, monospace;
       height: 100vh;
       overflow-y: auto;
@@ -33,23 +33,28 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      justify-content: center; /* Центрирует содержимое по вертикали */
       width: 100%;
+      min-height: 100vh; /* Устанавливает минимальную высоту шага равной высоте экрана */
       flex-grow: 1;
     }
     .step.active {
       display: flex;
     }
+    #step4, #step5 {
+      justify-content: flex-start; /* Возвращаем выравнивание к началу для шагов с канвой */
+    }
     .text-container {
       width: 100%;
       padding: 10px;
-      padding-top: 80px;
+      padding-top: 80px; /* Измените значение padding-top (например, 100px), чтобы сместить текст вниз */
       word-wrap: break-word;
-      text-align: center;
+      text-align: center; /* Измените на left или right для выравнивания текста по левому или правому краю */
       margin-bottom: 20px;
       flex-shrink: 0;
     }
     .typewriter {
-      font-size: 1.2rem;
+      font-size: 1.2rem; /* Измените значение (например, 1.5rem), чтобы изменить размер текста */
       line-height: 1.5;
       white-space: pre-wrap;
     }
@@ -57,76 +62,76 @@
       width: 100%;
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: center; /* Измените на flex-start или flex-end, чтобы выровнять кнопки по левому или правому краю */
       gap: 10px;
       padding: 10px;
       flex-shrink: 0;
     }
     .button {
-      padding: 10px 20px;
+      padding: 10px 20px; /* Измените значения (например, 15px 30px), чтобы изменить размер кнопок */
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 1px solid #fff; /* Измените цвет границы (например, #ff0000) для изменения цвета обводки кнопок */
+      color: #fff; /* Измените цвет текста кнопок (например, #00ff00 для зеленого) */
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s; /* Измените значение 0.3s (например, 0.5s), чтобы изменить скорость перехода при наведении */
     }
     .button:hover, .button:focus {
-      background: #333;
-      outline: 2px solid #fff;
+      background: #333; /* Измените цвет фона при наведении (например, #555) */
+      outline: 2px solid #fff; /* Измените цвет обводки при фокусе (например, #ff0000) */
     }
     .button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
     .save-button {
-      padding: 10px 20px;
+      padding: 10px 20px; /* Измените значения для изменения размера кнопки сохранения */
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 1px solid #fff; /* Измените цвет границы кнопки сохранения */
+      color: #fff; /* Измените цвет текста кнопки сохранения */
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s; /* Измените скорость перехода при наведении */
       margin: 10px auto;
     }
     .save-button:hover, .save-button:focus {
-      background: #333;
+      background: #333; /* Измените цвет фона при наведении на кнопку сохранения */
     }
     .back-button {
       position: fixed;
-      top: 20px;
-      left: 20px;
+      top: 20px; /* Измените значение (например, 40px), чтобы сместить кнопку "Назад" по вертикали */
+      left: 20px; /* Измените значение (например, 40px), чтобы сместить кнопку "Назад" по горизонтали */
       padding: 10px 20px;
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 1px solid #fff; /* Измените цвет границы кнопки "Назад" */
+      color: #fff; /* Измените цвет текста кнопки "Назад" */
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
       transition: background 0.3s;
       z-index: 10;
     }
     .back-button:hover, .back-button:focus {
-      background: #333;
+      background: #333; /* Измените цвет фона при наведении на кнопку "Назад" */
     }
     .continue-button {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: 20px; /* Измените значение для смещения кнопки "Продолжить" по вертикали */
+      right: 20px; /* Измените значение для смещения кнопки "Продолжить" по горизонтали */
       padding: 10px 20px;
       background: none;
-      border: 1px solid #fff;
-      color: #fff;
+      border: 1px solid #fff; /* Измените цвет границы кнопки "Продолжить" */
+      color: #fff; /* Измените цвет текста кнопки "Продолжить" */
       font-family: 'Courier New', Courier, monospace;
       cursor: pointer;
       transition: background 0.3s;
       z-index: 10;
     }
     .continue-button:hover, .continue-button:focus {
-      background: #333;
+      background: #333; /* Измените цвет фона при наведении на кнопку "Продолжить" */
     }
     canvas {
       display: none;
-      border: 2px solid #fff;
+      border: 2px solid #fff; /* Измените цвет границы canvas (например, #00ff00) */
       width: 100%;
       height: auto;
       max-height: calc(100vh - 250px);
@@ -143,8 +148,8 @@
       height: 100%;
       pointer-events: none;
       opacity: 0;
-      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVGhD7c0hAQAgDAAx3L9tN4ZgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg4D8P4wF1N8lKtwAAAABJRU5ErkJggg==');
-      animation: noise 0.1s infinite;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVGhD7c0hAQAgDAAx3L9tN4ZgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg4D8P4wF1N8lKtwAAAABJRU5ErkJggg==');
+      animation: noise 0.1s infinite; /* Измените значение 0.1s для изменения скорости анимации шума */
     }
     @keyframes noise {
       0% { background-position: 0 0; }
@@ -156,12 +161,12 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #fff;
+      background: #fff; /* Измените цвет вспышки (например, #ffcc00 для желтого) */
       opacity: 0;
       pointer-events: none;
     }
     .flash.active {
-      animation: flash 0.3s;
+      animation: flash 0.3s; /* Измените значение 0.3s для изменения длительности вспышки */
     }
     @keyframes flash {
       0% { opacity: 0; }
@@ -179,7 +184,7 @@
     .portrait {
       width: 100px;
       height: 100px;
-      background: #333;
+      background: #333; /* Измените цвет фона портретов в галерее */
       cursor: pointer;
     }
     #authorsPage {
@@ -189,7 +194,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #000;
+      background: #000; /* Измените цвет фона страницы авторов */
       z-index: 20;
       padding: 20px;
       overflow-y: auto;
@@ -199,17 +204,20 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: #fff;
+      color: #fff; /* Измените цвет текста загрузчика */
       font-size: 1.5rem;
       display: none;
     }
 
     /* Адаптивные стили */
     @media (max-width: 768px) {
+      .step {
+        min-height: 100vh; /* Гарантирует, что шаги занимают всю высоту экрана */
+      }
       .text-container {
         font-size: 1rem;
         padding: 5px;
-        padding-top: 120px;
+        padding-top: 120px; /* Оставляем отступ для кнопок навигации */
       }
       .button-container {
         flex-direction: column;
@@ -230,7 +238,7 @@
     @media (max-width: 480px) {
       .text-container {
         font-size: 0.9rem;
-        padding-top: 150px;
+        padding-top: 150px; /* Оставляем отступ для кнопок навигации */
       }
       .portrait {
         width: 80px;
@@ -240,6 +248,22 @@
         max-height: calc(100vh - 350px);
       }
     }
+
+    /* Чтобы добавить новый стиль для кнопок, добавьте новый класс ниже, например:
+    .custom-button {
+      padding: 12px 24px;
+      background-color: #444;
+      border: 2px solid #00ff00;
+      color: #00ff00;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      transition: all 0.3s;
+    }
+    .custom-button:hover {
+      background-color: #00ff00;
+      color: #000;
+    }
+    */
   </style>
 </head>
 <body>
@@ -252,6 +276,10 @@
     <!-- Кнопка "Продолжить" -->
     <button class="continue-button" id="continueButton" style="display: none;" disabled aria-label="Перейти к следующему шагу" onclick="debouncedNextStep()">Продолжить / Continue</button>
 
+    <!-- Чтобы добавить новую кнопку в контейнер, добавьте HTML-код, например:
+    <button class="custom-button" onclick="customFunction()">Новая кнопка</button>
+    -->
+
     <!-- Шаг 0: Выбор языка -->
     <div class="step" id="step0">
       <div class="text-container">
@@ -260,6 +288,9 @@
       <div class="button-container" id="step0Buttons">
         <button class="button" aria-label="Выбрать русский язык" onclick="selectLanguage('ru')">RU</button>
         <button class="button" aria-label="Выбрать английский язык" onclick="selectLanguage('en')">ENG</button>
+        <!-- Чтобы добавить новую кнопку выбора языка, добавьте:
+        <button class="button" aria-label="Выбрать другой язык" onclick="selectLanguage('fr')">FR</button>
+        и обновите функцию selectLanguage() в JavaScript -->
       </div>
     </div>
 
@@ -280,6 +311,9 @@
         <input type="file" id="imageInput" accept="image/*" style="display: none;">
         <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">Загрузить фото / Upload Photo</button>
         <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">Выбрать готовое / Select from Archive</button>
+        <!-- Чтобы добавить новую кнопку в step2, добавьте:
+        <button class="custom-button" onclick="newFunction()">Новая функция</button>
+        и определите newFunction() в JavaScript -->
       </div>
     </div>
 
@@ -445,7 +479,7 @@
 
       if (currentStep === 1) {
         triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50); /* Измените значение 50 (например, 20 для ускорения или 100 для замедления) для изменения скорости печати текста */
       } else if (currentStep === 2) {
         hideCanvas();
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
@@ -765,8 +799,13 @@
       document.getElementById('continueButton').disabled = currentStep === 2 && !img;
     }
 
+    // Чтобы добавить новую функцию для кнопки, определите ее здесь, например:
+    // function customFunction() {
+    //   alert('Это действие новой кнопки!');
+    // }
+
     let noiseScale = 0.02;
-    let brightColors = [[255, 0, 0], [255, 105, 180], [0, 0, 255], [0, 255, 0], [255, 255, 0]];
+    let brightColors = [[255, 0, 0], [255, 105, 180], [0, 0, 255], [0, 255, 0], [255, 255, 0]]; /* Измените значения в массиве, чтобы добавить или изменить яркие цвета частиц (например, добавить [128, 0, 128] для пурпурного) */
     let mouseInfluenceRadius = 100;
     let lastMouseX = 0;
     let lastMouseY = 0;
@@ -776,7 +815,7 @@
       canvas = createCanvas(windowWidth * 0.9, windowHeight * 0.6);
       canvas.parent('canvasContainer4');
       pixelDensity(1);
-      frameRate(30);
+      frameRate(30); /* Измените значение (например, 60), чтобы ускорить анимацию частиц */
       noLoop();
       canvas.elt.style.display = 'none';
 
@@ -827,7 +866,7 @@
               let col = img.get(pixelX, pixelY);
               let brightnessVal = brightness(col);
               if (brightnessVal > 20) {
-                let size = random(4, 8) * scaleFactor;
+                let size = random(4, 8) * scaleFactor; /* Измените значения в random(4, 8) для изменения размера частиц */
                 let shapeType = floor(random(4));
                 let distFromCenter = dist(x, y, 128, 128);
                 let densityFactor = map(distFromCenter, 0, 128, 1, 0.3);
@@ -851,7 +890,7 @@
                     tunneled: false,
                     tunnelTargetX: 0,
                     tunnelTargetY: 0,
-                    tunnelReturnSpeed: 0.02
+                    tunnelReturnSpeed: 0.02 /* Измените значение для изменения скорости возврата частиц после туннелирования */
                   });
                 }
               }
@@ -888,7 +927,7 @@
               collapsed: false,
               entangledWith: entangledIndex,
               phase: random(TWO_PI),
-              amplitude: random(30, 60) * scaleFactor,
+              amplitude: random(30, 60) * scaleFactor, /* Измените значения в random(30, 60) для изменения амплитуды движения частиц */
               isLips: (pixelY > img.height * 0.47 && pixelY < img.height * 0.55 && pixelX > img.width * 0.35 && pixelX < img.width * 0.65),
               isEyes: ((pixelY > img.height * 0.31 && pixelY < img.height * 0.39) && ((pixelX > img.width * 0.31 && pixelX < img.width * 0.43) || (pixelX > img.width * 0.57 && pixelX < img.width * 0.69))),
               isHair: (pixelY < img.height * 0.31),
@@ -902,7 +941,7 @@
       frame += 1;
       let transitionPhase = map(frame, 0, 120, 0, 1);
 
-      background(0);
+      background(0); /* Измените значение (например, background(50, 50, 50)) для изменения цвета фона canvas */
 
       let ghostAlpha = 150 * (1 - transitionPhase * 0.6);
       tint(255, ghostAlpha);
@@ -910,7 +949,7 @@
       noTint();
 
       let mouseSpeed = dist(mouseX, mouseY, lastMouseX, lastMouseY);
-      if (mouseSpeed > 0 && !isPaused) wavePhase += 0.1;
+      if (mouseSpeed > 0 && !isPaused) wavePhase += 0.1; /* Измените значение 0.1 для изменения скорости волнового эффекта при движении мыши */
       lastMouseX = mouseX;
       lastMouseY = mouseY;
 
@@ -919,8 +958,8 @@
         let state = quantumStates[i];
         if (state.entangledWith !== null) {
           let entangledParticle = particles[state.entangledWith];
-          let alpha = 100 * (0.5 + 0.5 * sin(frame * 0.03));
-          stroke(255, alpha);
+          let alpha = 100 * (0.5 + 0.5 * sin(frame * 0.03)); /* Измените 0.03 для изменения скорости мерцания линий связи */
+          stroke(255, alpha); /* Измените цвет линий связи (например, stroke(255, 0, 0) для красного) */
           strokeWeight(0.5);
           noFill();
           beginShape();
@@ -938,14 +977,14 @@
         let particle = particles[i];
         let state = quantumStates[i];
         let speedFactor = 1.0;
-        if (state.isEyes) speedFactor = 1.5;
-        if (state.isLips) speedFactor = 1.2;
-        if (state.isHair) speedFactor = 0.8;
+        if (state.isEyes) speedFactor = 1.5; /* Измените значение для изменения скорости движения частиц глаз */
+        if (state.isLips) speedFactor = 1.2; /* Измените значение для изменения скорости движения частиц губ */
+        if (state.isHair) speedFactor = 0.8; /* Измените значение для изменения скорости движения частиц волос */
 
         let d = dist(mouseX, mouseY, particle.x + particle.offsetX, particle.y + particle.offsetY);
         if (d < mouseInfluenceRadius && !isPaused) {
           particle.waveInfluence = map(d, 0, mouseInfluenceRadius, 1, 0);
-          particle.wavePhase = wavePhase - d * 0.05;
+          particle.wavePhase = wavePhase - d * 0.05; /* Измените 0.05 для изменения интенсивности волнового эффекта */
         } else {
           particle.waveInfluence = 0;
         }
@@ -960,7 +999,7 @@
         let waveOffsetX = 0;
         let waveOffsetY = 0;
         if (particle.waveInfluence > 0 && !isPaused) {
-          waveOffsetX = sin(particle.wavePhase) * 30 * particle.waveInfluence;
+          waveOffsetX = sin(particle.wavePhase) * 30 * particle.waveInfluence; /* Измените 30 для изменения амплитуды волнового смещения */
           waveOffsetY = cos(particle.wavePhase) * 30 * particle.waveInfluence;
         }
 
@@ -982,13 +1021,13 @@
         particle.offsetY = baseOffsetY + waveOffsetY;
 
         let dx = particle.baseX - (particle.x + particle.offsetX);
-        particle.x += dx * 0.03;
+        particle.x += dx * 0.03; /* Измените 0.03 для изменения скорости возврата частиц к базовой позиции */
         particle.offsetX += dx * 0.03;
         let dy = particle.baseY - (particle.y + particle.offsetY);
         particle.y += dy * 0.03;
         particle.offsetY += dy * 0.03;
 
-        state.phase += 0.02 * speedFactor;
+        state.phase += 0.02 * speedFactor; /* Измените 0.02 для изменения скорости изменения фазы частиц */
 
         let colorUncertainty = map(d, 0, mouseInfluenceRadius, 0, 0.05);
         if (random() < colorUncertainty && !isPaused) {
@@ -1026,7 +1065,7 @@
         }
 
         if (!state.collapsed) {
-          let t = 0.5 + 0.5 * sin(frame * 0.05 + state.phase);
+          let t = 0.5 + 0.5 * sin(frame * 0.05 + state.phase); /* Измените 0.05 для изменения скорости изменения цвета в суперпозиции */
           state.r = lerp(state.superpositionStates[0].r, state.superpositionStates[1].r, t) * (1 - colorUncertainty) + state.baseR * colorUncertainty;
           state.g = lerp(state.superpositionStates[0].g, state.superpositionStates[1].g, t) * (1 - colorUncertainty) + state.baseG * colorUncertainty;
           state.b = lerp(state.superpositionStates[0].b, state.superpositionStates[1].b, t) * (1 - colorUncertainty) + state.baseB * colorUncertainty;
@@ -1035,7 +1074,7 @@
         push();
         translate(particle.x + particle.offsetX, particle.y + particle.offsetY);
         noStroke();
-        let alpha = state.a * (0.5 + 0.5 * sin(frame * 0.05 + state.phase));
+        let alpha = state.a * (0.5 + 0.5 * sin(frame * 0.05 + state.phase)); /* Измените 0.05 для изменения скорости мерцания частиц */
         if (state.brightColor) {
           fill(state.brightColor[0], state.brightColor[1], state.brightColor[2], alpha * 0.8);
         } else {
