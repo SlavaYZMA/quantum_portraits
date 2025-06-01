@@ -58,6 +58,15 @@
       line-height: 1.5;
       white-space: pre-wrap;
     }
+    /* Анимация мерцания для текста, имитирующая квантовый шум */
+    .typewriter.quantum-flicker {
+      animation: quantum-flicker 0.1s infinite; /* Быстрое мерцание */
+    }
+    @keyframes quantum-flicker {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; } /* Лёгкое затемнение */
+      100% { opacity: 1; }
+    }
     .button-container {
       width: 100%;
       display: flex;
@@ -420,6 +429,146 @@
     const debouncedNextStep = debounce(nextStep, 300);
     const debouncedGoBack = debounce(goBack, 300);
 
+    // Генерация параметров на основе нормального распределения (Box-Muller transform)
+    function generateNormalRandom(mean, stdDev) {
+      const u1 = Math.random();
+      const u2 = Math.random();
+      const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+      return mean + stdDev * z;
+    }
+
+    // Функция для генерации квантовых параметров
+    function generateQuantumParams(step, isHeader, entangledDelay = null) {
+      let delayMean, delayStdDev, speedMean, speedStdDev;
+
+      if (isHeader) {
+        // Заголовки: более "определённые"
+        delayMean = 600 + 50 * step;
+        delayStdDev = 100 + 20 * step;
+        speedMean = 70 + 5 * step;
+        speedStdDev = 15;
+      } else {
+        // Основной текст: более "неопределённый"
+        delayMean = 500 + 40 * step;
+        delayStdDev = 150 + 20 * step;
+        speedMean = 40 + 3 * step;
+        speedStdDev = 10;
+      }
+
+      let initialDelay;
+      if (entangledDelay !== null) {
+        // Запутанность: сумма задержек близка к константе (1200 мс)
+        const targetSum = 1200;
+        initialDelay = Math.max(200, targetSum - entangledDelay + generateNormalRandom(0, delayStdDev * 0.5));
+      } else {
+        initialDelay = Math.max(200, generateNormalRandom(delayMean, delayStdDev));
+      }
+
+      const baseSpeed = Math.max(20, generateNormalRandom(speedMean, speedStdDev));
+
+      return { initialDelay, baseSpeed };
+    }
+
+    // Функция для разделения текста и задания квантовых параметров
+    function splitTextAndAssignParams(fullText, step) {
+      const lines = fullText.split('\n');
+      const phrases = [];
+      
+      if (lines.length > 1) {
+        const header = lines[0] + '\n';
+        const headerParams = generateQuantumParams(step, true);
+        phrases.push({
+          text: header,
+          initialDelay: headerParams.initialDelay,
+          baseSpeed: headerParams.baseSpeed
+        });
+        const mainText = lines.slice(1).join('\n');
+        if (mainText) {
+          const mainParams = generateQuantumParams(step, false, headerParams.initialDelay);
+          phrases.push({
+            text: mainText,
+            initialDelay: mainParams.initialDelay,
+            baseSpeed: mainParams.baseSpeed
+          });
+        }
+      } else {
+        const params = generateQuantumParams(step, true);
+        phrases.push({
+          text: fullText,
+          initialDelay: params.initialDelay,
+          baseSpeed: params.baseSpeed
+        });
+      }
+      
+      return phrases;
+    }
+
+    function typeText(elementId, phrasesOrText, speedOrCallback, callback) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        console.error(`Элемент ${elementId} не найден!`);
+        return;
+      }
+      element.innerHTML = '';
+
+      let phrases;
+      if (typeof phrasesOrText === 'string') {
+        phrases = [{ text: phrasesOrText, initialDelay: 0, baseSpeed: speedOrCallback || 50 }];
+        callback = typeof speedOrCallback === 'function' ? speedOrCallback : callback;
+      } else {
+        phrases = phrasesOrText;
+      }
+
+      let phraseIndex = 0;
+      let charIndex = 0;
+
+      function typeNext() {
+        if (phraseIndex >= phrases.length) {
+          element.classList.remove('quantum-flicker');
+          if (callback) callback();
+          return;
+        }
+
+        const { text, initialDelay, baseSpeed } = phrases[phraseIndex];
+
+        if (charIndex === 0) {
+          setTimeout(() => {
+            triggerFlash(); // Синхронизация с вспышкой
+            element.classList.add('quantum-flicker'); // Включаем мерцание
+            typeChar();
+          }, initialDelay);
+        } else {
+          typeChar();
+        }
+
+        function typeChar() {
+          if (charIndex < text.length) {
+            element.innerHTML += text.charAt(charIndex);
+            // Синусоидальная вариация скорости
+            const waveAmplitude = 0.3; // Амплитуда ±30%
+            const waveFrequency = 0.2; // Частота волны
+            const speedVariation = 1 + waveAmplitude * Math.sin(waveFrequency * charIndex);
+            const currentSpeed = baseSpeed * speedVariation;
+            charIndex++;
+            setTimeout(typeChar, currentSpeed);
+          } else {
+            phraseIndex++;
+            charIndex = 0;
+            typeNext();
+          }
+        }
+      }
+
+      typeNext();
+    }
+
+    function triggerFlash() {
+      document.getElementById('noiseOverlay').style.opacity = '0.1';
+      setTimeout(() => document.getElementById('noiseOverlay').style.opacity = '0', 1000);
+      document.getElementById('flashEffect').classList.add('active');
+      setTimeout(() => document.getElementById('flashEffect').classList.remove('active'), 300);
+    }
+
     function selectLanguage(lang) {
       language = lang;
       updateContinueButtonText();
@@ -478,19 +627,20 @@
       updateContinueButtonState();
 
       if (currentStep === 1) {
-        triggerFlash();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50); /* Измените значение 50 (например, 20 для ускорения или 100 для замедления) для изменения скорости печати текста */
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 2) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 3) {
         if (!img) {
           debouncedGoBack();
           return;
         }
-        triggerFlash();
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 4) {
         if (isCanvasReady) {
           showCanvas('canvasContainer4');
@@ -504,7 +654,8 @@
             }
           }, 500);
         }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 5) {
         if (isCanvasReady) {
           showCanvas('canvasContainer5');
@@ -518,14 +669,17 @@
             }
           }, 500);
         }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 6) {
         hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 7) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       }
     }
 
@@ -558,7 +712,8 @@
         typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
       } else if (currentStep === 1) {
         hideCanvas();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 2) {
         hideCanvas();
         document.getElementById('portraitGallery').style.display = 'none';
@@ -574,11 +729,13 @@
           <button class="button" aria-label="Загрузить фото" onclick="document.getElementById('imageInput').click()">${language === 'ru' ? 'Загрузить фото' : 'Upload Photo'}</button>
           <button class="button" aria-label="Выбрать из архива" onclick="openGallery()">${language === 'ru' ? 'Выбрать готовое' : 'Select from Archive'}</button>
         `;
-        typeText('typewriter2', translations.step2[language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 3) {
         hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 4) {
         if (isCanvasReady) {
           showCanvas('canvasContainer4');
@@ -592,7 +749,8 @@
             }
           }, 500);
         }
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 5) {
         if (isCanvasReady) {
           showCanvas('canvasContainer5');
@@ -607,38 +765,14 @@
           }, 500);
         }
         document.getElementById('saveButton').style.display = isPaused ? 'block' : 'none';
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       } else if (currentStep === 6) {
         hideCanvas();
         noLoop();
-        typeText(`typewriter${currentStep}`, translations[`step${currentStep}`][language], 50);
+        const fullText = translations[`step${currentStep}`][language];
+        typeText(`typewriter${currentStep}`, splitTextAndAssignParams(fullText, currentStep));
       }
-    }
-
-    function typeText(elementId, text, speed, callback) {
-      let i = 0;
-      const element = document.getElementById(elementId);
-      if (!element) {
-        console.error(`Элемент ${elementId} не найден!`);
-        return;
-      }
-      element.innerHTML = '';
-      function type() {
-        if (i < text.length) {
-          element.innerHTML += text.charAt(i);
-          i++;
-          setTimeout(type, speed);
-        } else if (callback) {
-          callback();
-        }
-      }
-      type();
-    }
-
-    function triggerFlash() {
-      document.getElementById('noiseOverlay').style.opacity = '0.1';
-      setTimeout(() => document.getElementById('noiseOverlay').style.opacity = '0', 1000);
-      document.getElementById('flashEffect').classList.add('active');
     }
 
     function restart() {
@@ -798,11 +932,6 @@
     function updateContinueButtonState() {
       document.getElementById('continueButton').disabled = currentStep === 2 && !img;
     }
-
-    // Чтобы добавить новую функцию для кнопки, определите ее здесь, например:
-    // function customFunction() {
-    //   alert('Это действие новой кнопки!');
-    // }
 
     let noiseScale = 0.02;
     let brightColors = [[255, 0, 0], [255, 105, 180], [0, 0, 255], [0, 255, 0], [255, 255, 0]]; /* Измените значения в массиве, чтобы добавить или изменить яркие цвета частиц (например, добавить [128, 0, 128] для пурпурного) */
